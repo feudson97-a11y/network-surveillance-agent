@@ -1,24 +1,30 @@
 # 🛡️ Network Surveillance Agent v2.0
 
-Agent IA autonome de cybersécurité — surveillance réseau local avec dashboard Flask, analyse CrewAI et rapports PDF/JSON.
+An autonomous AI cybersecurity agent for local network monitoring with a Flask dashboard, CrewAI analysis, and PDF/JSON reports.
+
+![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=python)
+![Flask](https://img.shields.io/badge/Flask-3.1-green?logo=flask)
+![CrewAI](https://img.shields.io/badge/CrewAI-0.80-purple)
+![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o--mini-orange?logo=openai)
+![License](https://img.shields.io/badge/License-MIT-yellow)
 
 ---
 
-## 🎯 Fonctionnalités
+## 🎯 Features
 
-| Fonctionnalité | Statut |
+| Feature | Status |
 |---|---|
-| Scan réseau local automatique | ✅ |
-| Détection IP, MAC, hostname, fabricant | ✅ |
-| Scan des ports sensibles (Nmap + socket) | ✅ |
-| Analyse IA par appareil (OpenAI GPT-4o-mini) | ✅ |
-| Agents CrewAI spécialisés (4 agents SOC) | ✅ |
-| Stockage SQLite historique | ✅ |
-| Dashboard Flask Bootstrap 5 dark | ✅ |
-| Rapports PDF professionnels | ✅ |
-| Rapports JSON structurés | ✅ |
-| Surveillance continue (toutes les 5 min) | ✅ |
-| Alertes de sécurité en temps réel | ✅ |
+| Automatic local network scanning | ✅ |
+| Device detection (IP, MAC, hostname, vendor) | ✅ |
+| Port scanning with Nmap + socket | ✅ |
+| AI-powered risk analysis (OpenAI GPT-4o-mini) | ✅ |
+| 4 specialized CrewAI SOC agents | ✅ |
+| SQLite history storage | ✅ |
+| Flask Bootstrap 5 dark dashboard | ✅ |
+| Professional PDF reports | ✅ |
+| Structured JSON reports | ✅ |
+| Continuous surveillance (every 5 min) | ✅ |
+| Real-time security alerts | ✅ |
 
 ---
 
@@ -28,27 +34,25 @@ Agent IA autonome de cybersécurité — surveillance réseau local avec dashboa
 network-surveillance-agent/
 │
 ├── app/
-│   ├── __init__.py
-│   ├── scanner.py      ← Scan réseau (Nmap + socket + Scapy)
-│   ├── analyzer.py     ← Analyse des risques (local + OpenAI)
-│   ├── ai_agent.py     ← Agents CrewAI spécialisés
-│   ├── reporter.py     ← Génération rapports PDF + JSON
-│   ├── database.py     ← Gestion SQLite
-│   └── utils.py        ← Utilitaires communs
+│   ├── scanner.py      ← Network scan (Nmap + socket + Scapy)
+│   ├── analyzer.py     ← Risk analysis (local + OpenAI)
+│   ├── ai_agent.py     ← Specialized CrewAI agents
+│   ├── reporter.py     ← PDF + JSON report generation
+│   ├── database.py     ← SQLite management
+│   └── utils.py        ← Shared utilities
 │
 ├── web/
-│   ├── __init__.py
-│   ├── app.py          ← Application Flask + routes API
+│   ├── app.py          ← Flask application + API routes
 │   └── templates/
-│       ├── index.html  ← Dashboard principal
-│       ├── devices.html ← Page des appareils
-│       └── reports.html ← Page des rapports
+│       ├── index.html  ← Main dashboard
+│       ├── devices.html ← Devices page
+│       └── reports.html ← Reports page
 │
-├── reports/            ← Rapports générés (PDF + JSON)
-├── database/           ← Base SQLite
-├── .env.example        ← Template de configuration
-├── requirements.txt    ← Dépendances Python
-├── main.py             ← Point d'entrée
+├── reports/            ← Generated reports (PDF + JSON)
+├── database/           ← SQLite database
+├── .env.example        ← Configuration template
+├── requirements.txt    ← Python dependencies
+├── main.py             ← Entry point
 └── README.md
 ```
 
@@ -56,128 +60,111 @@ network-surveillance-agent/
 
 ## 🚀 Installation
 
-### 1. Cloner / extraire le projet
+### 1. Clone the repository
 
-```powershell
+```bash
+git clone https://github.com/feudson97-a11y/network-surveillance-agent.git
 cd network-surveillance-agent
 ```
 
-### 2. Créer un environnement virtuel
+### 2. Create a virtual environment
 
-```powershell
-python -m venv mon_env
-mon_env\Scripts\activate          # Windows
-source mon_env/bin/activate       # Mac/Linux
+```bash
+# Windows
+python -m venv venv
+venv\Scripts\activate
+
+# Mac/Linux
+python -m venv venv
+source venv/bin/activate
 ```
 
-### 3. Installer les dépendances
+### 3. Install dependencies
 
-```powershell
+```bash
 pip install -r requirements.txt
 ```
 
-### 4. Configurer
+### 4. Configure environment
 
-```powershell
+```bash
+# Windows
 copy .env.example .env
-notepad .env
+
+# Mac/Linux
+cp .env.example .env
 ```
 
-Remplis ta clé OpenAI :
+Edit `.env` and add your OpenAI API key:
 ```
 OPENAI_API_KEY=sk-proj-xxxxxxxxxxxxxxxx
 ```
 
-### 5. Lancer
+### 5. Run the application
 
-```powershell
+```bash
 python main.py
 ```
 
-Le navigateur s'ouvre automatiquement sur **http://localhost:5000** 🌐
+The browser opens automatically at **http://localhost:5000**
 
 ---
 
-## 🎮 Modes de lancement
+## 🎮 Launch Modes
 
-```powershell
-# Dashboard web (défaut)
+```bash
+# Web dashboard (default)
 python main.py
 
-# Dashboard + surveillance continue (toutes les 5 min)
+# Dashboard + continuous surveillance (every 5 min)
 python main.py --continuous
 
-# Scan unique sans interface web
+# Single scan without web interface
 python main.py --scan-only
 ```
 
 ---
 
-## 🤖 Agents CrewAI
+## 🤖 CrewAI Agents
 
-| Agent | Rôle | Spécialité |
+| Agent | Role | Specialty |
 |---|---|---|
-| ScannerAgent | Analyste SOC Niveau 1 | Collecte et normalisation des données |
-| RiskAgent | Expert Risques Cyber | Évaluation technique et priorisation |
-| AlertAgent | Gestionnaire d'Alertes | Détection des menaces critiques |
-| ReportAgent | Rédacteur SOC | Rapport final professionnel |
+| ScannerAgent | SOC Analyst Level 1 | Data collection and normalization |
+| RiskAgent | Cyber Risk Expert | Technical evaluation and prioritization |
+| AlertAgent | Alert Manager | Critical threat detection |
+| ReportAgent | SOC Writer | Final professional report |
 
 ---
 
-## 🔌 Ports surveillés
+## 🔌 Monitored Ports
 
-| Port | Service | Risque |
+| Port | Service | Risk |
 |---|---|---|
-| 21 | FTP | 🔴 Élevé |
-| 22 | SSH | 🟡 Moyen |
-| 23 | Telnet | 🔴 Critique |
-| 80 | HTTP | 🟢 Faible |
-| 443 | HTTPS | 🟢 Faible |
-| 3306 | MySQL | 🔴 Élevé |
-| 3389 | RDP | 🔴 Élevé |
-| 5432 | PostgreSQL | 🔴 Élevé |
+| 21 | FTP | 🔴 High |
+| 22 | SSH | 🟡 Medium |
+| 23 | Telnet | 🔴 Critical |
+| 80 | HTTP | 🟢 Low |
+| 443 | HTTPS | 🟢 Low |
+| 3306 | MySQL | 🔴 High |
+| 3389 | RDP | 🔴 High |
+| 5432 | PostgreSQL | 🔴 High |
 
 ---
 
-## ⚠️ Avertissement légal
+## ⚠️ Legal Notice
 
-Cet outil est conçu **uniquement** pour surveiller ton propre réseau local.
-Scanner un réseau sans autorisation explicite est **illégal**.
+This tool is designed **only** to monitor your own local network.
+Scanning a network without explicit authorization is **illegal**.
 
 ---
 
-## 📄 Exemple de rapport JSON
+## 📝 License
 
-```json
-{
-  "metadata": {
-    "report_id": "NSA-1-20260511_180000",
-    "generated_at": "2026-05-11T18:00:00",
-    "tool": "Network Surveillance Agent v2.0"
-  },
-  "scan_summary": {
-    "network_range": "192.168.1.0/24",
-    "total_devices": 3,
-    "high_risk": 0,
-    "medium_risk": 0,
-    "low_risk": 3,
-    "global_score": 0
-  },
-  "devices": [
-    {
-      "ip": "192.168.1.1",
-      "hostname": "SAX1V1S.lan",
-      "mac": "AA:BB:CC:DD:EE:FF",
-      "vendor": "Fabricant inconnu",
-      "open_ports": [
-        {"port": 80, "description": "HTTP — Serveur web non sécurisé"},
-        {"port": 443, "description": "HTTPS — Serveur web sécurisé"}
-      ],
-      "risk_level": "low",
-      "risk_score": 0,
-      "explanation": "Le routeur expose les ports HTTP et HTTPS standards.",
-      "recommendations": ["Activer HTTPS uniquement", "Désactiver l'accès HTTP"]
-    }
-  ]
-}
-```
+MIT License
+
+---
+
+## 👤 Author
+
+**feudson97-a11y**
+- GitHub: [@feudson97-a11y](https://github.com/feudson97-a11y)
