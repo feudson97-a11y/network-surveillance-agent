@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appareils — Network Surveillance Agent</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background: #0a0e1a; font-family: 'Segoe UI', sans-serif; }
+        .navbar { background: #070b14 !important; border-bottom: 1px solid #1e293b; }
+        .navbar-brand { color: #3b82f6 !important; font-weight: 700; }
+        .nav-link { color: #94a3b8 !important; }
+        .nav-link:hover { color: #fff !important; }
+        .card { background: #111827; border: 1px solid #1e293b; border-radius: 12px; }
+        .card-header { background: transparent; border-bottom: 1px solid #1e293b; }
+        .table { --bs-table-bg: transparent; --bs-table-border-color: #1e293b; }
+        .table > thead > tr > th { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; }
+        .table > tbody > tr:hover > * { background: rgba(255,255,255,0.03); }
+        .badge-high { background: rgba(220,38,38,0.2); color: #f87171; border: 1px solid rgba(220,38,38,0.3); padding: 4px 12px; border-radius: 20px; }
+        .badge-medium { background: rgba(217,119,6,0.2); color: #fbbf24; border: 1px solid rgba(217,119,6,0.3); padding: 4px 12px; border-radius: 20px; }
+        .badge-low { background: rgba(22,163,74,0.2); color: #4ade80; border: 1px solid rgba(22,163,74,0.3); padding: 4px 12px; border-radius: 20px; }
+        .device-detail { background: #0d1525; border: 1px solid #1e293b; border-radius: 8px; }
+        .port-badge { background: #1e293b; color: #94a3b8; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; }
+        .port-badge.danger { background: rgba(220,38,38,0.2); color: #f87171; }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand" href="/"><i class="bi bi-shield-shaded me-2"></i>Network Surveillance Agent</a>
+        <div class="d-flex gap-3 ms-auto">
+            <a class="nav-link" href="/">Dashboard</a>
+            <a class="nav-link active" href="/devices">Appareils</a>
+            <a class="nav-link" href="/reports">Rapports</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid px-4 py-4">
+
+    <!-- Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h4 class="mb-1" style="color:#e2e8f0;"><i class="bi bi-diagram-3 me-2 text-primary"></i>Appareils détectés</h4>
+            {% if scan %}<small style="color:#64748b;">Scan #{{ scan.id }} — {{ scan.started_at|format_ts }}</small>{% endif %}
+        </div>
+        <!-- Sélecteur de scan -->
+        {% if scans %}
+        <select class="form-select form-select-sm" style="width:auto;background:#111827;border-color:#1e293b;color:#e2e8f0;" onchange="location.href='/devices?scan_id='+this.value">
+            {% for s in scans %}
+            <option value="{{ s.id }}" {{ 'selected' if s.id == selected_scan_id }}>Scan #{{ s.id }} — {{ s.started_at|format_ts }} ({{ s.total_devices }} appareils)</option>
+            {% endfor %}
+        </select>
+        {% endif %}
+    </div>
+
+    {% if devices %}
+    <!-- Stats rapides -->
+    <div class="row g-3 mb-4">
+        {% set high_count = devices|selectattr('risk_level','equalto','high')|list|length %}
+        {% set medium_count = devices|selectattr('risk_level','equalto','medium')|list|length %}
+        {% set low_count = devices|selectattr('risk_level','equalto','low')|list|length %}
+        <div class="col-3"><div class="card p-3 text-center"><div style="color:#64748b;font-size:0.75rem;text-transform:uppercase;">Total</div><div style="font-size:2rem;font-weight:700;color:#38bdf8;">{{ devices|length }}</div></div></div>
+        <div class="col-3"><div class="card p-3 text-center"><div style="color:#64748b;font-size:0.75rem;text-transform:uppercase;">Risque élevé</div><div style="font-size:2rem;font-weight:700;color:#f87171;">{{ high_count }}</div></div></div>
+        <div class="col-3"><div class="card p-3 text-center"><div style="color:#64748b;font-size:0.75rem;text-transform:uppercase;">Risque moyen</div><div style="font-size:2rem;font-weight:700;color:#fbbf24;">{{ medium_count }}</div></div></div>
+        <div class="col-3"><div class="card p-3 text-center"><div style="color:#64748b;font-size:0.75rem;text-transform:uppercase;">Risque faible</div><div style="font-size:2rem;font-weight:700;color:#4ade80;">{{ low_count }}</div></div></div>
+    </div>
+
+    <!-- Tableau des appareils -->
+    <div class="card mb-4">
+        <div class="card-header py-3 px-4">
+            <span style="font-weight:600;color:#e2e8f0;">Liste des appareils</span>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+                <thead><tr>
+                    <th class="ps-4">Statut</th>
+                    <th>Adresse IP</th>
+                    <th>Hostname</th>
+                    <th>Adresse MAC</th>
+                    <th>Fabricant</th>
+                    <th>Ports ouverts</th>
+                    <th>Risque</th>
+                    <th>Score</th>
+                </tr></thead>
+                <tbody>
+                {% for d in devices|sort(attribute='risk_score', reverse=True) %}
+                <tr style="cursor:pointer;" onclick="showDetail('{{ d.id }}')">
+                    <td class="ps-4"><span class="text-success">● En ligne</span></td>
+                    <td><code style="color:#38bdf8;">{{ d.ip }}</code></td>
+                    <td style="color:#94a3b8;">{{ d.hostname[:25] }}</td>
+                    <td style="color:#64748b;font-size:0.8rem;font-family:monospace;">{{ d.mac }}</td>
+                    <td style="color:#64748b;font-size:0.85rem;">{{ d.vendor[:15] }}</td>
+                    <td>
+                        {% set ports = d.open_ports|from_json if d.open_ports is string else d.open_ports %}
+                        {% for p in ports[:5] %}
+                            {% set pnum = p.port if p is mapping else p %}
+                            <span class="port-badge {{ 'danger' if pnum in [21,23,3306,5432,3389] else '' }} me-1">{{ pnum }}</span>
+                        {% endfor %}
+                        {% if not ports %}<span style="color:#475569;">Aucun</span>{% endif %}
+                    </td>
+                    <td><span class="badge-{{ d.risk_level }}">{{ d.risk_level|risk_emoji }} {{ d.risk_level|upper }}</span></td>
+                    <td><strong style="color:{{ '#f87171' if d.risk_score >= 4 else '#fbbf24' if d.risk_score >= 2 else '#4ade80' }}">{{ d.risk_score }}/10</strong></td>
+                </tr>
+
+                <!-- Détail inline -->
+                <tr id="detail-{{ d.id }}" style="display:none;">
+                    <td colspan="8" class="p-3">
+                        <div class="device-detail p-4">
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <h6 style="color:#38bdf8;"><i class="bi bi-cpu me-2"></i>Informations</h6>
+                                    <table style="font-size:0.85rem;width:100%;">
+                                        <tr><td style="color:#64748b;padding:4px 0;width:40%;">IP</td><td><code>{{ d.ip }}</code></td></tr>
+                                        <tr><td style="color:#64748b;padding:4px 0;">Hostname</td><td>{{ d.hostname }}</td></tr>
+                                        <tr><td style="color:#64748b;padding:4px 0;">MAC</td><td><code>{{ d.mac }}</code></td></tr>
+                                        <tr><td style="color:#64748b;padding:4px 0;">Fabricant</td><td>{{ d.vendor }}</td></tr>
+                                        <tr><td style="color:#64748b;padding:4px 0;">Score risque</td><td>{{ d.risk_score }}/10</td></tr>
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 style="color:#f87171;"><i class="bi bi-exclamation-triangle me-2"></i>Analyse IA</h6>
+                                    <p style="font-size:0.85rem;color:#94a3b8;">{{ d.explanation or 'Aucune analyse disponible' }}</p>
+                                    {% if d.recommendations %}
+                                    <h6 style="color:#4ade80;font-size:0.85rem;"><i class="bi bi-lightbulb me-2"></i>Recommandations</h6>
+                                    <ul style="font-size:0.85rem;color:#94a3b8;padding-left:1.2rem;">
+                                        {% for rec in d.recommendations %}<li>{{ rec }}</li>{% endfor %}
+                                    </ul>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="card p-5 text-center" style="color:#475569;">
+        <i class="bi bi-radar" style="font-size:3rem;"></i>
+        <p class="mt-3">Aucun appareil — lance un scan depuis le <a href="/">Dashboard</a></p>
+    </div>
+    {% endif %}
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function showDetail(id) {
+    const row = document.getElementById('detail-' + id);
+    if (row) row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+}
+</script>
+</body>
+</html>

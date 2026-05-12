@@ -1,0 +1,33 @@
+# ============================================================
+# Network Surveillance Agent — Requirements
+# Python 3.10+
+# Install: pip install -r requirements.txt
+# ============================================================
+
+# Web Framework
+flask==3.1.0
+flask-cors==5.0.0
+
+# AI & Agents
+openai==1.57.0
+crewai==0.80.0
+crewai-tools==0.17.0
+
+# Network Scanning
+scapy==2.5.0
+python-nmap==0.7.1
+
+# Database
+# SQLite est inclus dans Python — pas besoin d'installation
+
+# PDF Generation
+reportlab==4.2.5
+
+# Environment & Config
+python-dotenv==1.0.1
+
+# Utilities
+requests==2.32.3
+pydantic==2.10.3
+rich==13.9.4
+python-dateutil==2.9.0

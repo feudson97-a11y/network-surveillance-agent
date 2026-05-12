@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="fr" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Surveillance Agent — Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --nsa-bg: #0a0e1a;
+            --nsa-card: #111827;
+            --nsa-border: #1e293b;
+            --nsa-blue: #3b82f6;
+            --nsa-glow: rgba(59,130,246,0.15);
+        }
+        body { background: var(--nsa-bg); font-family: 'Segoe UI', sans-serif; }
+        .navbar { background: #070b14 !important; border-bottom: 1px solid var(--nsa-border); }
+        .navbar-brand { color: var(--nsa-blue) !important; font-weight: 700; letter-spacing: 0.05em; }
+        .nav-link { color: #94a3b8 !important; }
+        .nav-link.active, .nav-link:hover { color: #fff !important; }
+
+        .card { background: var(--nsa-card); border: 1px solid var(--nsa-border); border-radius: 12px; }
+        .card-header { background: transparent; border-bottom: 1px solid var(--nsa-border); }
+
+        .stat-card { transition: transform 0.2s, box-shadow 0.2s; }
+        .stat-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+        .stat-card .number { font-size: 2.5rem; font-weight: 700; line-height: 1; }
+        .stat-card .label { font-size: 0.8rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+
+        .badge-high { background: rgba(220,38,38,0.2); color: #f87171; border: 1px solid rgba(220,38,38,0.3); }
+        .badge-medium { background: rgba(217,119,6,0.2); color: #fbbf24; border: 1px solid rgba(217,119,6,0.3); }
+        .badge-low { background: rgba(22,163,74,0.2); color: #4ade80; border: 1px solid rgba(22,163,74,0.3); }
+
+        .alert-item { border-left: 3px solid #ef4444; background: rgba(239,68,68,0.08); border-radius: 0 8px 8px 0; }
+        .alert-item.medium { border-left-color: #f59e0b; background: rgba(245,158,11,0.08); }
+
+        .scan-btn { background: linear-gradient(135deg, #1d4ed8, #1e40af); border: none; padding: 10px 28px; border-radius: 8px; font-weight: 600; transition: all 0.2s; }
+        .scan-btn:hover { background: linear-gradient(135deg, #2563eb, #1d4ed8); transform: translateY(-1px); }
+        .scan-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .pulse-dot { width: 10px; height: 10px; background: #22c55e; border-radius: 50%; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.2)} }
+
+        .spinner-scan { display: none; }
+        .progress-bar-animated { animation: progress-bar-stripes 1s linear infinite; }
+
+        .table { --bs-table-bg: transparent; --bs-table-border-color: var(--nsa-border); }
+        .table > thead > tr > th { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; border-bottom-color: var(--nsa-border); }
+        .table > tbody > tr:hover > * { background: rgba(255,255,255,0.03); }
+
+        .risk-badge { padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .score-bar { height: 6px; border-radius: 3px; background: var(--nsa-border); }
+        .score-fill { height: 100%; border-radius: 3px; transition: width 1s ease; }
+
+        #toastContainer { position: fixed; bottom: 20px; right: 20px; z-index: 9999; }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand" href="/">
+            <i class="bi bi-shield-shaded me-2"></i>Network Surveillance Agent
+        </a>
+        <div class="d-flex align-items-center gap-3 ms-auto">
+            <a class="nav-link" href="/"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a>
+            <a class="nav-link" href="/devices"><i class="bi bi-diagram-3 me-1"></i>Appareils</a>
+            <a class="nav-link" href="/reports"><i class="bi bi-file-earmark-text me-1"></i>Rapports</a>
+            <div class="d-flex align-items-center gap-2 ms-2">
+                <div class="pulse-dot"></div>
+                <span style="font-size:0.8rem;color:#64748b;">{{ local_ip }}</span>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid px-4 py-4">
+
+    <!-- Scan Controls -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h4 class="mb-1" style="color:#e2e8f0;">Dashboard de Sécurité</h4>
+            <small style="color:#64748b;">Réseau surveillé : <code>{{ network_range }}</code></small>
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+            <div class="spinner-scan" id="scanSpinner">
+                <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+                <span style="color:#64748b;font-size:0.85rem;" id="scanStatus">Scan en cours...</span>
+            </div>
+            <button class="btn scan-btn text-white" id="scanBtn" onclick="startScan()">
+                <i class="bi bi-radar me-2"></i>Lancer un scan
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="card stat-card h-100 p-3">
+                <div class="label">Appareils détectés</div>
+                <div class="number text-info">{{ stats.last_scan.total_devices if stats.last_scan else 0 }}</div>
+                <small style="color:#64748b;" class="mt-2">{{ stats.total_scans }} scan(s) total</small>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card stat-card h-100 p-3">
+                <div class="label">Risque élevé 🔴</div>
+                <div class="number text-danger">{{ stats.last_scan.high_risk if stats.last_scan else 0 }}</div>
+                <small style="color:#64748b;" class="mt-2">Appareils critiques</small>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card stat-card h-100 p-3">
+                <div class="label">Score global</div>
+                <div class="number text-warning">{{ stats.last_scan.global_score if stats.last_scan else 0 }}<small style="font-size:1rem">/100</small></div>
+                <div class="score-bar mt-2">
+                    <div class="score-fill bg-warning" style="width:{{ stats.last_scan.global_score if stats.last_scan else 0 }}%"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card stat-card h-100 p-3">
+                <div class="label">Alertes actives</div>
+                <div class="number text-danger">{{ stats.unacknowledged_alerts }}</div>
+                <small style="color:#64748b;" class="mt-2">Non acquittées</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+
+        <!-- Appareils récents -->
+        <div class="col-lg-8">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center py-3 px-4">
+                    <span style="font-weight:600;color:#e2e8f0;"><i class="bi bi-diagram-3 me-2 text-primary"></i>Appareils détectés</span>
+                    <a href="/devices" class="btn btn-sm btn-outline-secondary">Voir tout</a>
+                </div>
+                <div class="card-body p-0">
+                    {% if devices %}
+                    <table class="table table-hover mb-0">
+                        <thead><tr>
+                            <th class="ps-4">IP</th>
+                            <th>Hostname</th>
+                            <th>Ports ouverts</th>
+                            <th>Risque</th>
+                        </tr></thead>
+                        <tbody>
+                        {% for d in devices %}
+                        <tr>
+                            <td class="ps-4"><code style="color:#38bdf8;">{{ d.ip }}</code></td>
+                            <td style="color:#94a3b8;">{{ d.hostname[:20] }}</td>
+                            <td>
+                                {% set ports = d.open_ports|from_json if d.open_ports is string else d.open_ports %}
+                                {% for p in ports[:4] %}
+                                    <span class="badge bg-secondary me-1">{{ p.port if p is mapping else p }}</span>
+                                {% endfor %}
+                                {% if not ports %}<span style="color:#475569;">Aucun</span>{% endif %}
+                            </td>
+                            <td>
+                                <span class="risk-badge badge-{{ d.risk_level }}">
+                                    {{ d.risk_level|risk_emoji }} {{ d.risk_level|upper }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="text-center py-5" style="color:#475569;">
+                        <i class="bi bi-radar" style="font-size:2.5rem;"></i>
+                        <p class="mt-3">Aucun scan effectué — lance ton premier scan !</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Alertes -->
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-header py-3 px-4">
+                    <span style="font-weight:600;color:#e2e8f0;"><i class="bi bi-bell me-2 text-danger"></i>Alertes récentes</span>
+                </div>
+                <div class="card-body">
+                    {% if alerts %}
+                        {% for alert in alerts %}
+                        <div class="alert-item {{ 'medium' if alert.severity == 'medium' else '' }} p-3 mb-2">
+                            <div style="font-size:0.75rem;color:#f87171;font-weight:600;">{{ alert.severity|upper }}</div>
+                            <div style="font-size:0.85rem;color:#e2e8f0;">{{ alert.message }}</div>
+                            <div style="font-size:0.75rem;color:#64748b;">{{ alert.device_ip }} — {{ alert.created_at|format_ts }}</div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="text-center py-4" style="color:#475569;">
+                        <i class="bi bi-shield-check" style="font-size:2rem;color:#22c55e;"></i>
+                        <p class="mt-2" style="font-size:0.9rem;">Aucune alerte active</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Historique des scans -->
+    <div class="card">
+        <div class="card-header py-3 px-4">
+            <span style="font-weight:600;color:#e2e8f0;"><i class="bi bi-clock-history me-2 text-info"></i>Historique des scans</span>
+        </div>
+        <div class="card-body p-0">
+            {% if recent_scans %}
+            <table class="table table-hover mb-0">
+                <thead><tr>
+                    <th class="ps-4">ID</th>
+                    <th>Réseau</th>
+                    <th>Appareils</th>
+                    <th>🔴 Élevé</th>
+                    <th>Score</th>
+                    <th>Date</th>
+                    <th>Statut</th>
+                </tr></thead>
+                <tbody>
+                {% for scan in recent_scans %}
+                <tr>
+                    <td class="ps-4"><a href="/devices?scan_id={{ scan.id }}" style="color:#38bdf8;">#{{ scan.id }}</a></td>
+                    <td><code style="color:#94a3b8;font-size:0.8rem;">{{ scan.network_range }}</code></td>
+                    <td>{{ scan.total_devices }}</td>
+                    <td>{% if scan.high_risk > 0 %}<span class="text-danger fw-bold">{{ scan.high_risk }}</span>{% else %}0{% endif %}</td>
+                    <td>{{ scan.global_score }}/100</td>
+                    <td style="color:#64748b;font-size:0.85rem;">{{ scan.started_at|format_ts }}</td>
+                    <td>
+                        {% if scan.status == 'completed' %}
+                        <span class="badge bg-success">✓ Terminé</span>
+                        {% else %}
+                        <span class="badge bg-warning">⏳ En cours</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="text-center py-4" style="color:#475569;">Aucun scan dans l'historique</div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+<!-- Toast -->
+<div id="toastContainer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function showToast(message, type = 'info') {
+    const colors = { info: '#3b82f6', success: '#22c55e', danger: '#ef4444', warning: '#f59e0b' };
+    const toast = document.createElement('div');
+    toast.style.cssText = `background:#111827;border:1px solid #1e293b;border-left:3px solid ${colors[type]};color:#e2e8f0;padding:12px 20px;border-radius:8px;margin-top:8px;font-size:0.9rem;min-width:280px;`;
+    toast.textContent = message;
+    document.getElementById('toastContainer').appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+}
+
+async function startScan() {
+    const btn = document.getElementById('scanBtn');
+    const spinner = document.getElementById('scanSpinner');
+    btn.disabled = true;
+    spinner.style.display = 'flex';
+    showToast('Scan démarré...', 'info');
+
+    try {
+        const res = await fetch('/api/scan/start', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+        const data = await res.json();
+        if (res.ok) {
+            showToast(`Scan #${data.scan_id} en cours sur ${data.network_range}`, 'success');
+            pollScanStatus(data.scan_id);
+        } else {
+            showToast(data.error || 'Erreur', 'danger');
+            btn.disabled = false;
+            spinner.style.display = 'none';
+        }
+    } catch (e) {
+        showToast('Erreur de connexion', 'danger');
+        btn.disabled = false;
+        spinner.style.display = 'none';
+    }
+}
+
+function pollScanStatus(scanId) {
+    const interval = setInterval(async () => {
+        const res = await fetch('/api/scan/status');
+        const data = await res.json();
+        if (!data.running) {
+            clearInterval(interval);
+            showToast('Scan terminé ! Actualisation...', 'success');
+            setTimeout(() => location.reload(), 1500);
+        }
+    }, 3000);
+}
+
+// Vérifier si un scan est en cours au chargement
+(async () => {
+    const res = await fetch('/api/scan/status');
+    const data = await res.json();
+    if (data.running) {
+        document.getElementById('scanBtn').disabled = true;
+        document.getElementById('scanSpinner').style.display = 'flex';
+        pollScanStatus(data.scan_id);
+    }
+})();
+</script>
+</body>
+</html>

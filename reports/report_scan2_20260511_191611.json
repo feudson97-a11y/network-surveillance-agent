@@ -1,0 +1,103 @@
+{
+  "metadata": {
+    "report_id": "NSA-2-20260511_191611",
+    "generated_at": "2026-05-11T19:16:11.438425",
+    "scan_id": 2,
+    "tool": "Network Surveillance Agent v2.0"
+  },
+  "scan_summary": {
+    "network_range": "192.168.1.0/24",
+    "started_at": "2026-05-11T19:10:57.657445",
+    "finished_at": "2026-05-11T19:16:11.438425",
+    "total_devices": 6,
+    "high_risk": 0,
+    "medium_risk": 0,
+    "low_risk": 6,
+    "global_score": 0
+  },
+  "devices": [
+    {
+      "ip": "192.168.1.1",
+      "hostname": "SAX1V1S.lan",
+      "mac": "Inconnu",
+      "vendor": "Inconnu",
+      "open_ports": [
+        {
+          "port": 80,
+          "description": "HTTP — Serveur web non sécurisé",
+          "state": "open"
+        },
+        {
+          "port": 443,
+          "description": "HTTPS — Serveur web sécurisé",
+          "state": "open"
+        }
+      ],
+      "risk_level": "low",
+      "risk_score": 0,
+      "explanation": "IA indisponible : Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}",
+      "recommendations": []
+    },
+    {
+      "ip": "192.168.1.37",
+      "hostname": "MacBookAir.lan",
+      "mac": "Inconnu",
+      "vendor": "Inconnu",
+      "open_ports": [],
+      "risk_level": "low",
+      "risk_score": 0,
+      "explanation": "IA indisponible : Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}",
+      "recommendations": []
+    },
+    {
+      "ip": "192.168.1.40",
+      "hostname": "DESKTOP-V7AQQH8.lan",
+      "mac": "Inconnu",
+      "vendor": "Inconnu",
+      "open_ports": [],
+      "risk_level": "low",
+      "risk_score": 0,
+      "explanation": "IA indisponible : Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}",
+      "recommendations": []
+    },
+    {
+      "ip": "192.168.1.183",
+      "hostname": "Galaxy-A16-5G-428.lan",
+      "mac": "Inconnu",
+      "vendor": "Inconnu",
+      "open_ports": [],
+      "risk_level": "low",
+      "risk_score": 0,
+      "explanation": "IA indisponible : Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}",
+      "recommendations": []
+    },
+    {
+      "ip": "192.168.1.214",
+      "hostname": "Galaxy-A16-5G.lan",
+      "mac": "Inconnu",
+      "vendor": "Inconnu",
+      "open_ports": [],
+      "risk_level": "low",
+      "risk_score": 0,
+      "explanation": "IA indisponible : Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}",
+      "recommendations": []
+    },
+    {
+      "ip": "192.168.1.254",
+      "hostname": "iPhone-429.lan",
+      "mac": "Inconnu",
+      "vendor": "Inconnu",
+      "open_ports": [],
+      "risk_level": "low",
+      "risk_score": 0,
+      "explanation": "IA indisponible : Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}",
+      "recommendations": []
+    }
+  ],
+  "ai_analysis": {
+    "crew_report": "## Résumé Exécutif\n6 appareil(s) détecté(s) sur le réseau local.\n0 appareil(s) à risque élevé, 0 à risque moyen.\n\n## État du Réseau\nTotal appareils : 6\nRisque élevé : 0\nRisque moyen : 0\nRisque faible : 6\n\n## Plan de Remédiation\n1. Fermez les ports inutilisés sur tous les appareils\n2. Désactivez Telnet et remplacez par SSH\n3. Protégez les bases de données derrière un pare-feu\n4. Activez les mises à jour automatiques\n5. Changez les mots de passe par défaut\n\n## Conclusion\nActivez OpenAI pour une analyse personnalisée et détaillée.",
+    "ai_powered": false,
+    "agents_used": []
+  },
+  "legal_notice": "Ce rapport concerne uniquement le réseau local autorisé. Scanner un réseau sans autorisation est illégal."
+}
