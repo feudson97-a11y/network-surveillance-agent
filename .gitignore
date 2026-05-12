@@ -1,0 +1,8 @@
+mon_env/
+venv/
+.env
+database/
+__pycache__/
+*.pyc
+reports/
+*.db
